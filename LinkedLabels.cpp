@@ -103,7 +103,8 @@ bool isApp(const string& str) {
 
 
 //////////////////////////////////////////////////////////////////////////////////////////////////
-//string compare functions 
+// string compare functions
+// should comparisons be case in/sensitive?
 
 // case insensitive
 bool ciCompareChar(char a, char b) {
@@ -123,7 +124,7 @@ bool compareStr(const string& str1, const string& str2) {
 	}
 }
 
-// end of case insensitivs string compare functions
+// end of string compare functions
 //////////////////////////////////////////////////////////////////////////////////////////////////
 
 
@@ -161,7 +162,7 @@ void writeWhiteSpaces(ifstream& infile, ofstream& outfile) {
 
 
 //////////////////////////////////////////////////////////////////////////////////////////////////
-// search through oldlabels, return index
+// search and store oldlabels, return index
 
 int searchNStoreOldLabels(int oldLabels[], int oldLabel, int& numLabels) {
 	
