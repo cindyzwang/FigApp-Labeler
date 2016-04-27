@@ -5,8 +5,8 @@
 using namespace std;
 
 void readFile();
-bool isFig(const string& str);
-bool isApp(const string& str);
+bool isFig(const string& str, ifstream& infile);
+bool isApp(const string& str, ifstream& infile);
 void compareStrings();
 bool ciCompareChar(char a, char b);
 bool csCompareChar(char a, char b);
@@ -23,18 +23,20 @@ int main() {
 
 
 //////////////////////////////////////////////////////////////////////////////////////////////////
-// read the entire file (will this read text boxes after using .doc files?)
+// read the entire file
 // find labels for figures and appendices
 // search for "figure," "fig.," "appendix," "app."
 
 // still to do: 
-// 1) ignore cases where the word "figure" or "appendix" is used as part of a sentence
-// 2) let users choose between labeling with numbers or letters
+// x 1) ignore cases where the word "figure" or "appendix" is used as part of a sentence
+//      x: only looks at "fig" or "app" when followed by [' ', digit]
+//   2) let users choose between labeling with numbers or letters
+//   3) use .doc files. will this read text boxes/other special formatting?
 
 void readFile() {
 	
 	ifstream ifile("linked labels test.txt");
-	ofstream ofile("new linked labels test.txt");
+	ofstream ofile("relabled linked labels test.txt");
 	
 	string str;
 
@@ -55,13 +57,13 @@ void readFile() {
 		ofile << str;
 		writeWhiteSpaces(ifile, ofile);
 
-		if (isFig(str)) {
+		if (isFig(str, ifile)) {
 			// replace oldlabel with newlabel, store oldlabel
 			ifile >> oldFigLabel;
 			newLabel = searchNStoreOldLabels(oldFigLabels, oldFigLabel, figcount) + 1;
 			ofile << newLabel;
 
-		} else if (isApp(str)) {
+		} else if (isApp(str, ifile)) {
 			// replace oldlabel with newlabel
 			ifile >> oldAppLabel;
 			newLabel = searchNStoreOldLabels(oldAppLabels, oldAppLabel, appcount) + 1;
@@ -84,16 +86,26 @@ void readFile() {
 //////////////////////////////////////////////////////////////////////////////////////////////////
 // functions to check for figure or appendix label
 
-bool isFig(const string& str) {
-	return (compareStr(str, "Figure") || 
-		compareStr(str, "Fig.") || 
-		compareStr(str, "Fig"));
+bool isFig(const string& str, ifstream& infile) {
+
+	if (compareStr(str, "Figure") || compareStr(str, "Fig.") ||	compareStr(str, "Fig")) {
+		char nextchar = infile.peek();
+		if (nextchar >= '0' && nextchar <= '9') {
+			return true;
+		}
+	}
+	return false;
 }
 
-bool isApp(const string& str) {
-	return (compareStr(str, "Appendix") || 
-		compareStr(str, "App.") || 
-		compareStr (str, "App"));
+bool isApp(const string& str, ifstream& infile) {
+	
+	if (compareStr(str, "Appendix") || compareStr(str, "App.") || compareStr (str, "App")) {
+		char nextchar = infile.peek();
+		if (nextchar >= '0' && nextchar <= '9') {
+			return true;
+		}
+	}
+	return false;
 }
 
 // end of figure/appendix label checking
@@ -103,7 +115,8 @@ bool isApp(const string& str) {
 
 
 //////////////////////////////////////////////////////////////////////////////////////////////////
-//string compare functions 
+// string compare functions
+// should comparisons be case in/sensitive?
 
 // case insensitive
 bool ciCompareChar(char a, char b) {
@@ -123,7 +136,7 @@ bool compareStr(const string& str1, const string& str2) {
 	}
 }
 
-// end of case insensitivs string compare functions
+// end of string compare functions
 //////////////////////////////////////////////////////////////////////////////////////////////////
 
 
@@ -161,7 +174,7 @@ void writeWhiteSpaces(ifstream& infile, ofstream& outfile) {
 
 
 //////////////////////////////////////////////////////////////////////////////////////////////////
-// search through oldlabels, return index
+// search and store oldlabels, return index
 
 int searchNStoreOldLabels(int oldLabels[], int oldLabel, int& numLabels) {
 	
