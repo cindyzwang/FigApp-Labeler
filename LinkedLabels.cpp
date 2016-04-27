@@ -1,10 +1,36 @@
+/*
+"old label" refers to a label in the input file
+"new label" refers to a label in the output file
+
+Problem:
+	for large, collaborative reports, relabeling figures and appendices 
+	in the correct order takes so much more time than it's worth 
+	but you have to do it
+
+How to use:
+	users label figures/appendices with any integer (-2^16 < label < 2^16-1)
+	set input file
+	this program:
+		1) reads and copies file
+		2) as it reads, it looks for labels
+		3) renumbers in order for the output file
+			a) if it is referenceing a new fig/app, stores the old label
+			b) if it is referencing a previous fig/app, finds that old label, 
+			   returns the new label (index) used for that fig/app
+
+*/
+//////////////////////////////////////////////////////////////////////////////////////////////////
+
+
+
 #include <iostream>
 #include <fstream>
 #include <string>
+#include <cstring>
 #include <algorithm>
 using namespace std;
 
-void readFile();
+void changeFiles(string path_in);
 bool isFig(const string& str, ifstream& infile);
 bool isApp(const string& str, ifstream& infile);
 void compareStrings();
@@ -13,11 +39,17 @@ bool csCompareChar(char a, char b);
 bool compareStr(const string& str1, const string& str2);
 void writeWhiteSpaces(ifstream& ifile, ofstream& ofile);
 int searchNStoreOldLabels(int oldLabels[], int oldLabel, int& numLabels);
+void convertToLetters();
 
 const int N = 100;
 
+
+
 int main() {
-	readFile();
+	string path_in;
+	cout << "input file path: ";
+	getline(cin, path_in);
+	changeFiles(path_in);
 	return 0;
 }
 
@@ -33,11 +65,25 @@ int main() {
 //   2) let users choose between labeling with numbers or letters
 //   3) use .doc files. will this read text boxes/other special formatting?
 
-void readFile() {
-	
-	ifstream ifile("linked labels test.txt");
-	ofstream ofile("relabled linked labels test.txt");
-	
+void changeFiles(string path_in) {
+
+	// extract old file name
+	char* cpath_in = new char [path_in.length()+1];
+	strcpy(cpath_in, path_in.c_str());
+	ifstream ifile(cpath_in);
+	if (!ifile) {
+		return;
+	}
+	delete[] cpath_in;
+
+	// create new file name "RELABELED *"
+	char cpath_out_pre[] = "RELABELED "; 				// length = 10
+	char* cpath_out = new char[path_in.length()+11];
+	strcpy(cpath_out, cpath_out_pre);
+	strcat(cpath_out, path_in.c_str());	
+	ofstream ofile(cpath_out);
+	delete[] cpath_in;
+
 	string str;
 
 	int oldFigLabels[N];
@@ -64,7 +110,7 @@ void readFile() {
 			ofile << newLabel;
 
 		} else if (isApp(str, ifile)) {
-			// replace oldlabel with newlabel
+			// replace oldlabel with newlabel, store oldlabel
 			ifile >> oldAppLabel;
 			newLabel = searchNStoreOldLabels(oldAppLabels, oldAppLabel, appcount) + 1;
 			ofile << newLabel;
@@ -116,16 +162,10 @@ bool isApp(const string& str, ifstream& infile) {
 
 //////////////////////////////////////////////////////////////////////////////////////////////////
 // string compare functions
-// should comparisons be case in/sensitive?
 
 // case insensitive
 bool ciCompareChar(char a, char b) {
 	return tolower(a) == tolower(b);
-}
-
-// case sensitive
-bool csCompareChar(char a, char b) {
-	return a == b;
 }
 
 bool compareStr(const string& str1, const string& str2) {
@@ -143,7 +183,7 @@ bool compareStr(const string& str1, const string& str2) {
 
 
 //////////////////////////////////////////////////////////////////////////////////////////////////
-// get whitespaces. take care of eof
+// get whitespaces
 
 void writeWhiteSpaces(ifstream& infile, ofstream& outfile) {
 
