@@ -28,11 +28,13 @@ How to use:
 #include <string>
 #include <cstring>
 #include <algorithm>
+#include <sstream>
 using namespace std;
 
 void changeFiles(string path_in);
 bool isFig(const string& str, ifstream& infile);
 bool isApp(const string& str, ifstream& infile);
+bool nextIsInt(ifstream& infile);
 void compareStrings();
 bool ciCompareChar(char a, char b);
 bool csCompareChar(char a, char b);
@@ -136,26 +138,40 @@ void changeFiles(string path_in) {
 // functions to check for figure or appendix label
 
 bool isFig(const string& str, ifstream& infile) {
-
 	if (compareStr(str, "Figure") || compareStr(str, "Fig.") ||	compareStr(str, "Fig")) {
-		char nextchar = infile.peek();
-		if (nextchar >= '0' && nextchar <= '9') {
+		if (nextIsInt(infile))
 			return true;
-		}
 	}
 	return false;
 }
 
 bool isApp(const string& str, ifstream& infile) {
-	
 	if (compareStr(str, "Appendix") || compareStr(str, "App.") || compareStr (str, "App")) {
-		char nextchar = infile.peek();
-		if (nextchar >= '0' && nextchar <= '9') {
+		if (nextIsInt(infile)) 
 			return true;
-		}
 	}
 	return false;
 }
+
+bool nextIsInt(ifstream& infile) {
+	string line, next;
+	int pos = infile.tellg();
+	getline(infile, line);
+
+	istringstream sline(line);
+	sline >> next;
+	infile.seekg(pos, infile.beg);
+
+	if (next.empty() || ((!isdigit(next[0])) && (next[0] != '-') && (next[0] != '+'))) 
+		return false;
+
+   char* p;
+   strtol(next.c_str(), &p, 10);
+
+   return (*p == 0) ;
+
+}
+
 
 // end of figure/appendix label checking
 //////////////////////////////////////////////////////////////////////////////////////////////////
@@ -190,9 +206,8 @@ bool compareStr(const string& str1, const string& str2) {
 
 void writeWhiteSpaces(ifstream& infile, ofstream& outfile) {
 
-	if (infile.eof()) {
+	if (infile.eof())
 		return;
-	}
 
 	char ws;
 	char next = infile.peek();
@@ -203,9 +218,8 @@ void writeWhiteSpaces(ifstream& infile, ofstream& outfile) {
 
 		next = infile.peek();
 
-		if (infile.eof()) {
+		if (infile.eof())
 			return;
-		}	
 
 	}
 }
@@ -227,15 +241,10 @@ int searchNStoreOldLabels(int oldLabels[], int oldLabel, int& numLabels) {
 		oldLabels[0] = oldLabel;
 		index = 0;
 		numLabels++;
-
 	} else {
-
 		int* p = find(oldLabels, oldLabels+numLabels, oldLabel);
-
-		if (p == oldLabels + numLabels) {
+		if (p == oldLabels + numLabels)
 			numLabels++;
-		}
-
 		index = distance(oldLabels, p);
 	}
 
