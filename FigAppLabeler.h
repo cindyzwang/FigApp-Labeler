@@ -1,6 +1,7 @@
 #ifndef FIGGAPPLABELER_H
 #define FIGGAPPLABELER_H
 
+using namespace std;
 
 void changeFiles(string path_in);
 bool isFig(const string& str, ifstream& infile);
