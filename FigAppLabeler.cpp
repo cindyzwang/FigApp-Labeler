@@ -27,6 +27,15 @@ How to use:
 #include <cstring>
 #include <algorithm>
 #include <sstream>
+
+//#ifndef NOMINMAX
+//#define NOMINMAX
+//#endif
+//#include <windows.h>
+
+//#include "WordAutomation.h"
+//#include "EzWordAutomation.h"
+
 using namespace std;
 
 
@@ -35,9 +44,10 @@ const int N = 100;							// max number of figures and labels
 
 
 int main() {
-	string path_in;
+	
+	char path_in[200];
 	cout << "input file path: ";
-	getline(cin, path_in);
+	cin.getline(path_in, N);
 	changeFiles(path_in);
 	return 0;
 }
@@ -54,26 +64,38 @@ int main() {
 //   2) let users choose between labeling with numbers or letters
 //   3) use .doc files. will this read text boxes/other special formatting?
 
-void changeFiles(string path_in) {
+void changeFiles(char path_in[]) {
 
 	
 	// get old file name
-	char* cpath_in = new char [path_in.length()+1];
-	strcpy(cpath_in, path_in.c_str());
-	ifstream ifile(cpath_in);
+	ifstream ifile(path_in);
 	if (!ifile) {
 		cout << "404 File Not Found \n";
 		return;
 	}
-	delete[] cpath_in;
 
 
 	// create new file name "* RELABELED.xxx"
-	string path_out = newFileName(path_in);
-	char* cpath_out = new char[path_out.length()+1];
-	strcpy(cpath_out, path_out.c_str());
-	ofstream ofile(cpath_out);
-	delete[] cpath_in;
+	// I KNOW that using strings would have been easier/better/shorter
+	ofstream ofile;
+	char path_out_suf[] = " RELABELED";
+	char path_out[200];
+	char ext[10];
+	char* pchp;
+	// check for a file extension and split
+	pchp = (char*) strchr(path_in, '.');
+	if (pchp != NULL) {
+		int split_pos = pchp - path_in;
+		for (int i = strlen(path_in), j = 0; i > split_pos-1; i--, j++)
+			ext[j] = path_in[j+split_pos];
+		strncat(path_out, path_in, split_pos);
+		strcat(path_out, path_out_suf);
+		strcat(path_out, ext);
+		ofile.open(path_out);
+	} else {
+		cout << "404 File Not Found \n";
+		return;
+	}	
 
 	string str;
 
@@ -238,23 +260,4 @@ int searchNStoreOldLabels(int oldLabels[], int oldLabel, int& numLabels) {
 }
 
 // end of search and store function
-//////////////////////////////////////////////////////////////////////////////////////////////////
-
-
-
-//////////////////////////////////////////////////////////////////////////////////////////////////
-// make name for output file
-// split path_in to name + extension
-// note: most file extensions are three characters long but they don't have to be
-
-string newFileName(string path_in) {
-	string sub1, sub2;
-	string path_out_suf = " RELABELED";
-	int split_pos = path_in.rfind('.');
-	sub1 = path_in.substr(0, split_pos);
-	sub2 = path_in.substr(split_pos, path_in.length());
-	return sub1+path_out_suf+sub2;
-}
-
-// end of newFileName generator
 //////////////////////////////////////////////////////////////////////////////////////////////////

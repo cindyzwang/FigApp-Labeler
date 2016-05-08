@@ -1,6 +1,7 @@
 #ifndef FIGGAPPLABELER_H
 #define FIGGAPPLABELER_H
 
+using namespace std;
 
 void changeFiles(string path_in);
 bool isFig(const string& str, ifstream& infile);
@@ -12,7 +13,6 @@ bool csCompareChar(char a, char b);
 bool compareStr(const string& str1, const string& str2);
 void writeWhiteSpaces(ifstream& ifile, ofstream& ofile);
 int searchNStoreOldLabels(int oldLabels[], int oldLabel, int& numLabels);
-string newFileName(string path_in);
 //*void convertToLetters();
 
 
